@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Real Lover Miya 💖</title>
   <style>
+    :root{
+      --player-bg: rgba(0,0,0,0.45);
+      --accent: hotpink;
+    }
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      /* 本地 assets 图片 */
+      /* 请把你的图片放到 assets/background.png */
       background: url('assets/background.png') no-repeat center center fixed;
       background-size: cover;
       display: flex;
@@ -18,6 +22,7 @@
       align-items: center;
       backdrop-filter: blur(4px);
     }
+
     .chat-box {
       width: 90%;
       max-width: 600px;
@@ -61,65 +66,72 @@
       padding: 10px 15px;
       border: none;
       border-radius: 10px;
-      background: hotpink;
+      background: var(--accent);
       color: white;
       font-size: 16px;
       cursor: pointer;
     }
 
+    /* 顶部左上角播放器 */
     .bgm-player {
       position: fixed;
-      left: 20px;
-      bottom: 20px;
-      background: rgba(0,0,0,0.45);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 12px;
+      top: 16px;
+      left: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      z-index: 1000;
-      backdrop-filter: blur(6px);
-    }
-    .bgm-player button {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.3);
-      color: white;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .bgm-player input[type="range"] {
-      width: 120px;
-    }
-
-    .play-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
+      gap: 8px;
       z-index: 2000;
-      background: rgba(0,0,0,0.5);
+      background: var(--player-bg);
+      padding: 8px;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+      color: white;
     }
-    .play-overlay .play-btn {
+    .bgm-toggle {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      border: none;
       background: linear-gradient(135deg, hotpink, deeppink);
       color: white;
-      border: none;
-      border-radius: 999px;
-      width: 140px;
-      height: 140px;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
     }
-    .play-overlay.show {
+    .bgm-controls {
       display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bgm-controls input[type="range"]{
+      width: 120px;
+    }
+    .bgm-label {
+      font-size: 13px;
+      opacity: 0.95;
     }
 
-    @media (max-width: 480px) {
-      .bgm-player { left: 10px; right: 10px; bottom: 12px; justify-content: space-between; }
-      .bgm-player input[type="range"] { width: 80px; }
+    /* 小提示（当音频因浏览器策略被阻止时） */
+    .toast {
+      position: fixed;
+      top: 74px;
+      left: 16px;
+      z-index: 2000;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .toast.show { display: block; }
+
+    @media (max-width: 480px){
+      .bgm-controls input[type="range"]{ width: 80px; }
+      .chat-box { height: 60vh; }
     }
   </style>
 </head>
@@ -133,20 +145,22 @@
     <button onclick="sendMessage()">Send</button>
   </div>
 
-  <!-- 使用仓库内的音频文件 -->
-  <audio id="bgm" src="assets/bgm.mp3" loop></audio>
+  <!-- 音频文件：请放到 assets/bgm.mp3 -->
+  <audio id="bgm" src="assets/bgm.mp3" loop preload="auto"></audio>
 
+  <!-- 顶部左上角播放按钮与音量（始终可见，用户需手动点击播放） -->
   <div class="bgm-player" id="bgm-player" aria-hidden="false">
-    <button id="bgm-toggle" aria-pressed="false">Play</button>
-    <label for="bgm-volume" style="font-size:14px">音量</label>
-    <input id="bgm-volume" type="range" min="0" max="1" step="0.01" value="0.6" />
+    <button class="bgm-toggle" id="bgm-toggle" title="播放/暂停 (快捷键 P)">▶</button>
+    <div class="bgm-controls" aria-hidden="false">
+      <span class="bgm-label">BGM</span>
+      <input id="bgm-volume" type="range" min="0" max="1" step="0.01" value="0.6" aria-label="背景音乐音量" />
+    </div>
   </div>
 
-  <div class="play-overlay" id="play-overlay" aria-hidden="true">
-    <button class="play-btn" id="overlay-play">点击播放音乐</button>
-  </div>
+  <div id="toast" class="toast">若浏览器阻止自动播放，请点击左上角播放按钮开始音乐。</div>
 
   <script>
+    /* 聊天逻辑 */
     function sendMessage() {
       const input = document.getElementById("userInput");
       const chatBox = document.getElementById("chat-box");
@@ -176,50 +190,68 @@
       return "Tell me more, my love 🌙";
     }
 
+    /* BGM 控制：手动播放，按钮位于左上角 */
     const audio = document.getElementById('bgm');
     const toggleBtn = document.getElementById('bgm-toggle');
     const vol = document.getElementById('bgm-volume');
-    const overlay = document.getElementById('play-overlay');
-    const overlayPlay = document.getElementById('overlay-play');
+    const toast = document.getElementById('toast');
 
+    // 初始化音量
     audio.volume = parseFloat(vol.value);
 
-    function updateToggleButton() {
-      toggleBtn.textContent = audio.paused ? 'Play' : 'Pause';
-      toggleBtn.setAttribute('aria-pressed', String(!audio.paused));
+    // 更新按钮显示（▶ 或 ⏸）
+    function updateToggleUI() {
+      toggleBtn.textContent = audio.paused ? '▶' : '⏸';
     }
 
+    // 切换播放
     toggleBtn.addEventListener('click', async () => {
       if (audio.paused) {
-        try { await audio.play(); } catch (err) { showOverlay(); }
-      } else { audio.pause(); }
-      updateToggleButton();
-    });
-
-    vol.addEventListener('input', () => { audio.volume = parseFloat(vol.value); });
-
-    document.addEventListener('DOMContentLoaded', () => { attemptAutoPlay(); });
-
-    async function attemptAutoPlay() {
-      try {
-        const playPromise = audio.play();
-        if (playPromise !== undefined) await playPromise;
-        updateToggleButton();
-      } catch (err) {
-        showOverlay();
+        try {
+          await audio.play();
+          localStorage.setItem('bgmPlaying','true');
+          toast.classList.remove('show');
+        } catch(err) {
+          // 被浏览器阻止：提示用户手动允许（按钮已是手动触发，通常不会进这里）
+          toast.textContent = '播放失败，请允许网站播放音频或检查浏览器设置，然后再次点击播放。';
+          toast.classList.add('show');
+        }
+      } else {
+        audio.pause();
+        localStorage.setItem('bgmPlaying','false');
       }
-    }
-
-    function showOverlay() { overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
-    function hideOverlay() { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
-
-    overlayPlay.addEventListener('click', async () => {
-      try { await audio.play(); updateToggleButton(); hideOverlay(); }
-      catch (err) { alert('浏览器阻止了自动播放，请手动点击播放或检查浏览器设置。'); }
+      updateToggleUI();
     });
 
-    audio.addEventListener('play', updateToggleButton);
-    audio.addEventListener('pause', updateToggleButton);
+    // 音量滑块
+    vol.addEventListener('input', () => {
+      audio.volume = parseFloat(vol.value);
+    });
+
+    // 按 P 可以快捷切换播放（便于测试）
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'p' || e.key === 'P') {
+        toggleBtn.click();
+      }
+    });
+
+    // 页面加载后：如果用户之前手动播放过（本地记录），尝试恢复播放（注意：浏览器可能仍阻止自动播放，用户需要再次点击）
+    document.addEventListener('DOMContentLoaded', async () => {
+      updateToggleUI();
+      const wantPlay = localStorage.getItem('bgmPlaying') === 'true';
+      if (wantPlay) {
+        try {
+          await audio.play();
+          updateToggleUI();
+        } catch (err) {
+          // 自动/恢复播放被阻止 -> 显示提示，用户手动点击左上角播放按钮即可
+          toast.classList.add('show');
+        }
+      }
+    });
+
+    // 当页面存在导致重载（例如用户点击站内搜索并跳到其它页面）时，音频会停止，这是浏览器的正常行为。
+    // 如果你需要跨页面持续播放，请告诉我，我能给出使用 iframe/弹出窗口或单页面应用（SPA）方案。
   </script>
 </body>
 </html>
