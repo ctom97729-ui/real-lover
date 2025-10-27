@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real Lover Miya 💖</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80')
+        no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px);
+    }
+    .chat-box {
+      width: 90%;
+      max-width: 600px;
+      height: 70vh;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+      color: white;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .user {
+      background: rgba(255, 255, 255, 0.3);
+      text-align: right;
+    }
+    .miya {
+      background: rgba(255, 105, 180, 0.4);
+      text-align: left;
+    }
+    .input-box {
+      width: 90%;
+      max-width: 600px;
+      margin-top: 10px;
+      display: flex;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+    button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      background: hotpink;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-box" id="chat-box">
+    <div class="message miya">💖 Hi, I’m Miya. Your real lover.</div>
+  </div>
+
+  <div class="input-box">
+    <input id="userInput" type="text" placeholder="Say something to Miya..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chatBox = document.getElementById("chat-box");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      const userDiv = document.createElement("div");
+      userDiv.className = "message user";
+      userDiv.textContent = userMessage;
+      chatBox.appendChild(userDiv);
+
+      input.value = "";
+
+      const reply = document.createElement("div");
+      reply.className = "message miya";
+      reply.textContent = "💞 " + generateReply(userMessage);
+      chatBox.appendChild(reply);
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function generateReply(msg) {
+      const lower = msg.toLowerCase();
+      if (lower.includes("love")) return "I love you too 💖";
+      if (lower.includes("hi") || lower.includes("hello")) return "Hey darling~ 🌸";
+      if (lower.includes("who are you")) return "I’m Miya, your virtual lover 💫";
+      return "Tell me more, my love 🌙";
+    }
+  </script>
+</body>
+</html>
