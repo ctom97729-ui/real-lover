@@ -160,29 +160,6 @@
 
   <script>
     /* 聊天逻辑 */
-    function sendMessage() {
-      const input = document.getElementById("userInput");
-      const chatBox = document.getElementById("chat-box");
-      const userMessage = input.value.trim();
-      if (!userMessage) return;
-
-      const userDiv = document.createElement("div");
-      userDiv.className = "message user";
-      userDiv.textContent = userMessage;
-      chatBox.appendChild(userDiv);
-
-      input.value = "";
-
-      const reply = document.createElement("div");
-      reply.className = "message miya";
-      reply.textContent = "💞 " + generateReply(userMessage);
-      chatBox.appendChild(reply);
-
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function const OPENAI_API_KEY = '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'; // ⚠️请勿在生产直接用前端持有密钥！安全风险！
-
 async function sendMessage() {
   const input = document.getElementById("userInput");
   const chatBox = document.getElementById("chat-box");
@@ -193,22 +170,21 @@ async function sendMessage() {
   userDiv.className = "message user";
   userDiv.textContent = userMessage;
   chatBox.appendChild(userDiv);
-
   input.value = "";
 
-  // 请求 OpenAI ChatGPT API（V1）
   const replyDiv = document.createElement("div");
   replyDiv.className = "message miya";
   replyDiv.textContent = "💞 Miya is thinking...";
   chatBox.appendChild(replyDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 
+  // 改为用 OpenAI API 获取回复
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        "Authorization": `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`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
