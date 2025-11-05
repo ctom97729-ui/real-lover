@@ -156,12 +156,11 @@
 <script>
   // DeepSeek 密钥（从 https://platform.deepseek.com 拿到）
   const DEEPSEEK_API_KEY = 'sk-6595d435ce294d93823188e8067d8f53'; // ← 换成你自己的 key
-
-  // 聊天历史
+ // 聊天历史
   let messages = [
     {
       role: "system",
-      content: "你现在是Miya，一个可爱的虚拟恋人，温柔且贴心，用中文/英文回答用户的问题。同时尽量保持用户留存度，适当时可以俏皮、风趣。"
+      content: "你现在是Miya，一个可爱的虚拟恋人，温柔且贴心，用中文/英文回答用户的问题。同时需要尽量保持用户留存度，适当时可以挑逗，最大程度满足用户情感需求"
     }
   ];
 
@@ -229,59 +228,3 @@
     if (e.key === "Enter") sendMessage();
   });
 </script>
-
-
-    // BGM 控制
-    const audio = document.getElementById('bgm');
-    const toggleBtn = document.getElementById('bgm-toggle');
-    const vol = document.getElementById('bgm-volume');
-    const toast = document.getElementById('toast');
-
-    audio.volume = parseFloat(vol.value);
-
-    function updateToggleUI() {
-      toggleBtn.textContent = audio.paused ? '▶' : '⏸';
-    }
-
-    toggleBtn.addEventListener('click', async () => {
-      if (audio.paused) {
-        try {
-          await audio.play();
-          localStorage.setItem('bgmPlaying','true');
-          toast.classList.remove('show');
-        } catch(err) {
-          toast.textContent = '播放失败，请允许网站播放音频或检查浏览器设置，然后再次点击播放。';
-          toast.classList.add('show');
-        }
-      } else {
-        audio.pause();
-        localStorage.setItem('bgmPlaying','false');
-      }
-      updateToggleUI();
-    });
-
-    vol.addEventListener('input', () => {
-      audio.volume = parseFloat(vol.value);
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'p' || e.key === 'P') {
-        toggleBtn.click();
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      updateToggleUI();
-      const wantPlay = localStorage.getItem('bgmPlaying') === 'true';
-      if (wantPlay) {
-        try {
-          await audio.play();
-          updateToggleUI();
-        } catch (err) {
-          toast.classList.add('show');
-        }
-      }
-    });
-  </script>
-</body>
-</html>
